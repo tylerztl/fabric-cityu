@@ -74,6 +74,8 @@ var (
 	chaincodeVersion      string
 	policy                string
 	escc                  string
+	feeLimit              string
+	mempoolAddress        string
 	vscc                  string
 	policyMarshalled      []byte
 	transient             string
@@ -124,6 +126,10 @@ func resetFlags() {
 		fmt.Sprint("The endorsement policy associated to this chaincode"))
 	flags.StringVarP(&escc, "escc", "E", common.UndefinedParamValue,
 		fmt.Sprint("The name of the endorsement system chaincode to be used for this chaincode"))
+	flags.StringVarP(&feeLimit, "feeLimit", "", common.UndefinedParamValue,
+		fmt.Sprint("Transaction fees that users need to pay to execute transactions"))
+	flags.StringVarP(&mempoolAddress, "mempoolAddress", "", common.UndefinedParamValue,
+		fmt.Sprint("The addresses of the mempool"))
 	flags.StringVarP(&vscc, "vscc", "V", common.UndefinedParamValue,
 		fmt.Sprint("The name of the verification system chaincode to be used for this chaincode"))
 	flags.BoolVarP(&getInstalledChaincodes, "installed", "", false,

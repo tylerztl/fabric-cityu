@@ -257,7 +257,7 @@ func CreateChaincodeProposalWithTransient(typ common.HeaderType, chainID string,
 // CreateChaincodeProposalWithTxIDAndTransient creates a proposal from given
 // input. It returns the proposal and the transaction id associated with the
 // proposal
-func CreateChaincodeProposalWithTxIDAndTransient(typ common.HeaderType, chainID string, cis *peer.ChaincodeInvocationSpec, creator []byte, txid string, transientMap map[string][]byte) (*peer.Proposal, string, error) {
+func CreateChaincodeProposalWithTxIDAndTransient(typ common.HeaderType, chainID, feeLimit string, cis *peer.ChaincodeInvocationSpec, creator []byte, txid string, transientMap map[string][]byte) (*peer.Proposal, string, error) {
 	// generate a random nonce
 	nonce, err := crypto.GetRandomNonce()
 	if err != nil {
@@ -272,12 +272,12 @@ func CreateChaincodeProposalWithTxIDAndTransient(typ common.HeaderType, chainID 
 		}
 	}
 
-	return CreateChaincodeProposalWithTxIDNonceAndTransient(txid, typ, chainID, cis, nonce, creator, transientMap)
+	return CreateChaincodeProposalWithTxIDNonceAndTransient(txid, feeLimit, typ, chainID, cis, nonce, creator, transientMap)
 }
 
 // CreateChaincodeProposalWithTxIDNonceAndTransient creates a proposal from
 // given input
-func CreateChaincodeProposalWithTxIDNonceAndTransient(txid string, typ common.HeaderType, chainID string, cis *peer.ChaincodeInvocationSpec, nonce, creator []byte, transientMap map[string][]byte) (*peer.Proposal, string, error) {
+func CreateChaincodeProposalWithTxIDNonceAndTransient(txid, feeLimit string, typ common.HeaderType, chainID string, cis *peer.ChaincodeInvocationSpec, nonce, creator []byte, transientMap map[string][]byte) (*peer.Proposal, string, error) {
 	ccHdrExt := &peer.ChaincodeHeaderExtension{ChaincodeId: cis.ChaincodeSpec.ChaincodeId}
 	ccHdrExtBytes, err := proto.Marshal(ccHdrExt)
 	if err != nil {
@@ -310,6 +310,7 @@ func CreateChaincodeProposalWithTxIDNonceAndTransient(txid string, typ common.He
 				ChannelId: chainID,
 				Extension: ccHdrExtBytes,
 				Epoch:     epoch,
+				FeeLimit:  []byte(feeLimit),
 			},
 		),
 		SignatureHeader: MarshalOrPanic(

@@ -30,6 +30,8 @@ func invokeCmd(cf *ChaincodeCmdFactory) *cobra.Command {
 		"name",
 		"ctor",
 		"channelID",
+		"feeLimit",
+		"mempoolAddress",
 		"peerAddresses",
 		"tlsRootCertFiles",
 		"connectionProfile",
@@ -56,6 +58,7 @@ func chaincodeInvoke(cmd *cobra.Command, cf *ChaincodeCmdFactory) error {
 		}
 	}
 	defer cf.BroadcastClient.Close()
+	defer cf.MempoolClient.Close()
 
 	return chaincodeInvokeOrQuery(cmd, true, cf)
 }

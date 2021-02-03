@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math"
+	"math/big"
 	"strings"
 	"sync"
 
@@ -34,6 +35,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	pmempool "github.com/tylerztl/fabric-mempool/protos"
 )
 
 // checkSpec to see if chaincode resides within current package capture for language.
@@ -103,12 +105,14 @@ func chaincodeInvokeOrQuery(cmd *cobra.Command, invoke bool, cf *ChaincodeCmdFac
 		spec,
 		channelID,
 		txID,
+		feeLimit,
 		invoke,
 		cf.Signer,
 		cf.Certificate,
 		cf.EndorserClients,
 		cf.DeliverClients,
-		cf.BroadcastClient)
+		cf.BroadcastClient,
+		cf.MempoolClient)
 
 	if err != nil {
 		return errors.Errorf("%s - proposal response: %v", err, proposalResp)
@@ -235,6 +239,14 @@ func checkChaincodeCmdParams(cmd *cobra.Command) error {
 			escc = "escc"
 		}
 
+		if feeLimit != common.UndefinedParamValue {
+			_, ok := new(big.Int).SetString(feeLimit, 10)
+			if !ok {
+				return errors.New("invalid feeLimit, must be number string")
+			}
+			logger.Infof("Using feeLimit %s", feeLimit)
+		}
+
 		if vscc != common.UndefinedParamValue {
 			logger.Infof("Using vscc %s", vscc)
 		} else {
@@ -338,6 +350,7 @@ type ChaincodeCmdFactory struct {
 	Certificate     tls.Certificate
 	Signer          msp.SigningIdentity
 	BroadcastClient common.BroadcastClient
+	MempoolClient   common.MempoolClient
 }
 
 // InitCmdFactory init the ChaincodeCmdFactory with default clients
@@ -405,12 +418,22 @@ func InitCmdFactory(cmdName string, isEndorserRequired, isOrdererRequired bool) 
 			return nil, errors.WithMessage(err, "error getting broadcast client")
 		}
 	}
+
+	var mempoolClient common.MempoolClient
+	if mempoolAddress != "" {
+		mempoolClient, err = common.NewMempoolClient()
+		if err != nil {
+			return nil, errors.WithMessage(err, "error getting mempool client")
+		}
+	}
+
 	return &ChaincodeCmdFactory{
 		EndorserClients: endorserClients,
 		DeliverClients:  deliverClients,
 		Signer:          signer,
 		BroadcastClient: broadcastClient,
 		Certificate:     certificate,
+		MempoolClient:   mempoolClient,
 	}, nil
 }
 
@@ -427,12 +450,14 @@ func ChaincodeInvokeOrQuery(
 	spec *pb.ChaincodeSpec,
 	cID string,
 	txID string,
+	feeLimit string,
 	invoke bool,
 	signer msp.SigningIdentity,
 	certificate tls.Certificate,
 	endorserClients []pb.EndorserClient,
 	deliverClients []api.PeerDeliverClient,
 	bc common.BroadcastClient,
+	mc common.MempoolClient,
 ) (*pb.ProposalResponse, error) {
 	// Build the ChaincodeInvocationSpec message
 	invocation := &pb.ChaincodeInvocationSpec{ChaincodeSpec: spec}
@@ -455,7 +480,7 @@ func ChaincodeInvokeOrQuery(
 		}
 	}
 
-	prop, txid, err := putils.CreateChaincodeProposalWithTxIDAndTransient(pcommon.HeaderType_ENDORSER_TRANSACTION, cID, invocation, creator, txID, tMap)
+	prop, txid, err := putils.CreateChaincodeProposalWithTxIDAndTransient(pcommon.HeaderType_ENDORSER_TRANSACTION, cID, feeLimit, invocation, creator, txID, tMap)
 	if err != nil {
 		return nil, errors.WithMessage(err, fmt.Sprintf("error creating proposal for %s", funcName))
 	}
@@ -506,10 +531,19 @@ func ChaincodeInvokeOrQuery(
 				}
 			}
 
-			// send the envelope for ordering
-			if err = bc.Send(env); err != nil {
-				return proposalResp, errors.WithMessage(err, fmt.Sprintf("error sending transaction for %s", funcName))
+			// send the envelope for mempool
+			envBytes, err := proto.Marshal(env)
+			if err != nil {
+				return nil, err
 			}
+			if _, err := mc.SubmitTransaction(context.Background(), &pmempool.EndorsedTransaction{Tx: envBytes}); err != nil {
+				return proposalResp, errors.WithMessage(err, fmt.Sprintf("error sending transaction to mempool for %s", funcName))
+			}
+
+			// send the envelope for ordering
+			//if err = bc.Send(env); err != nil {
+			//	return proposalResp, errors.WithMessage(err, fmt.Sprintf("error sending transaction for %s", funcName))
+			//}
 
 			if dg != nil && ctx != nil {
 				// wait for event that contains the txid from all peers
