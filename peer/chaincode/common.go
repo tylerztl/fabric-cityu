@@ -35,7 +35,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	pmempool "github.com/tylerztl/fabric-mempool/protos"
 )
 
 // checkSpec to see if chaincode resides within current package capture for language.
@@ -536,7 +535,7 @@ func ChaincodeInvokeOrQuery(
 			if err != nil {
 				return nil, err
 			}
-			if _, err := mc.SubmitTransaction(context.Background(), &pmempool.EndorsedTransaction{Tx: envBytes}); err != nil {
+			if _, err := mc.SubmitTransaction(context.Background(), &pcommon.EndorsedTransaction{Tx: envBytes}); err != nil {
 				return proposalResp, errors.WithMessage(err, fmt.Sprintf("error sending transaction to mempool for %s", funcName))
 			}
 

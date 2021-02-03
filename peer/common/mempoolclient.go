@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package common
 
 import (
-	pmempool "github.com/tylerztl/fabric-mempool/protos"
+	pmempool "github.com/hyperledger/fabric/protos/common"
 	"google.golang.org/grpc"
 )
 
