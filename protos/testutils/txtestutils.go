@@ -95,7 +95,7 @@ func ConstructSignedTxEnv(chainID string, ccid *pb.ChaincodeID, pResponse *pb.Re
 		if err != nil {
 			return nil, "", err
 		}
-		prop, txid, err = putils.CreateChaincodeProposalWithTxIDNonceAndTransient(txid, common.HeaderType_ENDORSER_TRANSACTION, chainID, &pb.ChaincodeInvocationSpec{ChaincodeSpec: &pb.ChaincodeSpec{ChaincodeId: ccid}}, nonce, ss, nil)
+		prop, txid, err = putils.CreateChaincodeProposalWithTxIDNonceAndTransient(txid, "", common.HeaderType_ENDORSER_TRANSACTION, chainID, &pb.ChaincodeInvocationSpec{ChaincodeSpec: &pb.ChaincodeSpec{ChaincodeId: ccid}}, nonce, ss, nil)
 	}
 	if err != nil {
 		return nil, "", err

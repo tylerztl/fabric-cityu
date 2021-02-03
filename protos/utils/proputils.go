@@ -251,7 +251,7 @@ func CreateChaincodeProposalWithTransient(typ common.HeaderType, chainID string,
 		return nil, "", err
 	}
 
-	return CreateChaincodeProposalWithTxIDNonceAndTransient(txid, typ, chainID, cis, nonce, creator, transientMap)
+	return CreateChaincodeProposalWithTxIDNonceAndTransient(txid, "", typ, chainID, cis, nonce, creator, transientMap)
 }
 
 // CreateChaincodeProposalWithTxIDAndTransient creates a proposal from given
@@ -457,7 +457,7 @@ func CreateProposalFromCISAndTxid(txid string, typ common.HeaderType, chainID st
 	if err != nil {
 		return nil, "", err
 	}
-	return CreateChaincodeProposalWithTxIDNonceAndTransient(txid, typ, chainID, cis, nonce, creator, nil)
+	return CreateChaincodeProposalWithTxIDNonceAndTransient(txid, "", typ, chainID, cis, nonce, creator, nil)
 }
 
 // CreateProposalFromCIS returns a proposal given a serialized identity and a
