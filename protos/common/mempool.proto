@@ -15,13 +15,14 @@ message SubmitTxResponse {
 }
 
 message FetchTxsRequest {
-    string sender = 1;
-    int32 tx_num = 2;
+    string requester = 1;
+    uint64 block_height = 2;
 }
 
 message FetchTxsResponse {
     int32 tx_num = 1;
-    bool is_empty = 2;
+    uint64 fee_reward = 2;
+    bool is_empty = 3;
 }
 
 message EndorsedTransaction {

@@ -128,7 +128,7 @@ func resetFlags() {
 		fmt.Sprint("The name of the endorsement system chaincode to be used for this chaincode"))
 	flags.StringVarP(&feeLimit, "feeLimit", "", common.UndefinedParamValue,
 		fmt.Sprint("Transaction fees that users need to pay to execute transactions"))
-	flags.StringVarP(&mempoolAddress, "mempoolAddress", "", common.UndefinedParamValue,
+	flags.StringVarP(&mempoolAddress, "mempoolAddress", "", "fabric-mempool:8080",
 		fmt.Sprint("The addresses of the mempool"))
 	flags.StringVarP(&vscc, "vscc", "V", common.UndefinedParamValue,
 		fmt.Sprint("The name of the verification system chaincode to be used for this chaincode"))

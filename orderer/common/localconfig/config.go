@@ -38,11 +38,18 @@ type TopLevel struct {
 	Metrics    Metrics
 }
 
+type MemPool struct {
+	Address         string
+	Interval        time.Duration
+	OrdererIdentity string
+}
+
 // General contains config which should be common among all orderer types.
 type General struct {
 	LedgerType        string
 	ListenAddress     string
 	ListenPort        uint16
+	Mempool           MemPool
 	TLS               TLS
 	Cluster           Cluster
 	Keepalive         Keepalive
@@ -214,9 +221,14 @@ type Statsd struct {
 // Defaults carries the default orderer configuration values.
 var Defaults = TopLevel{
 	General: General{
-		LedgerType:     "file",
-		ListenAddress:  "127.0.0.1",
-		ListenPort:     7050,
+		LedgerType:    "file",
+		ListenAddress: "127.0.0.1",
+		ListenPort:    7050,
+		Mempool: MemPool{
+			Address:         "127.0.0.1:8080",
+			Interval:        time.Second * 6,
+			OrdererIdentity: "UnknownOrderer",
+		},
 		GenesisMethod:  "provisional",
 		GenesisProfile: "SampleSingleMSPSolo",
 		SystemChannel:  "test-system-channel-name",
@@ -348,6 +360,15 @@ func (c *TopLevel) completeInitialization(configDir string) {
 		case c.General.ListenPort == 0:
 			logger.Infof("General.ListenPort unset, setting to %v", Defaults.General.ListenPort)
 			c.General.ListenPort = Defaults.General.ListenPort
+		case c.General.Mempool.Address == "":
+			logger.Infof("General.Mempool.Address unset, setting to %v", Defaults.General.Mempool.Address)
+			c.General.Mempool.Address = Defaults.General.Mempool.Address
+		case c.General.Mempool.Interval == 0:
+			logger.Infof("General.Mempool.Interval unset, setting to %v", Defaults.General.Mempool.Interval)
+			c.General.Mempool.Interval = Defaults.General.Mempool.Interval
+		case c.General.Mempool.OrdererIdentity == "":
+			logger.Infof("General.Mempool.OrdererIdentity unset, setting to %v", Defaults.General.Mempool.OrdererIdentity)
+			c.General.Mempool.OrdererIdentity = Defaults.General.Mempool.OrdererIdentity
 
 		case c.General.GenesisMethod == "":
 			c.General.GenesisMethod = Defaults.General.GenesisMethod

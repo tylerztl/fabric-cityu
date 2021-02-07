@@ -26,7 +26,7 @@ type healthChecker interface {
 }
 
 // New creates a Kafka-based consenter. Called by orderer's main.go.
-func New(config localconfig.Kafka, mp metrics.Provider, healthChecker healthChecker, icr InactiveChainRegistry, mkChain func(string)) (consensus.Consenter, *Metrics) {
+func New(config localconfig.Kafka, mempool localconfig.MemPool, mp metrics.Provider, healthChecker healthChecker, icr InactiveChainRegistry, mkChain func(string)) (consensus.Consenter, *Metrics) {
 	if config.Verbose {
 		logging.SetLevel(logging.DEBUG, "orderer.consensus.kafka.sarama")
 	}
@@ -53,6 +53,7 @@ func New(config localconfig.Kafka, mp metrics.Provider, healthChecker healthChec
 		},
 		healthChecker: healthChecker,
 		metrics:       metrics,
+		mempool:       mempool,
 	}, metrics
 }
 
@@ -76,6 +77,7 @@ type consenterImpl struct {
 	healthChecker         healthChecker
 	metrics               *Metrics
 	inactiveChainRegistry InactiveChainRegistry
+	mempool               localconfig.MemPool
 }
 
 // HandleChain creates/returns a reference to a consensus.Chain object for the
@@ -112,6 +114,7 @@ type commonConsenter interface {
 	retryOptions() localconfig.Retry
 	topicDetail() *sarama.TopicDetail
 	Metrics() *Metrics
+	Mempool() localconfig.MemPool
 }
 
 func (consenter *consenterImpl) Metrics() *Metrics {
@@ -128,4 +131,8 @@ func (consenter *consenterImpl) retryOptions() localconfig.Retry {
 
 func (consenter *consenterImpl) topicDetail() *sarama.TopicDetail {
 	return consenter.topicDetailVal
+}
+
+func (consenter *consenterImpl) Mempool() localconfig.MemPool {
+	return consenter.mempool
 }

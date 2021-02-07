@@ -27,6 +27,13 @@ General:
     # Listen port: The port on which to bind to listen.
     ListenPort: 7050
 
+    Mempool:
+        # mempool server address
+        Address: 127.0.0.1:8080
+        # orderer fetch transaction interval from mempool
+        Interval: 6s
+        OrdererIdentity: UnknownOrderer
+
     # TLS: TLS settings for the GRPC server.
     TLS:
         Enabled: false

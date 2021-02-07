@@ -418,12 +418,9 @@ func InitCmdFactory(cmdName string, isEndorserRequired, isOrdererRequired bool) 
 		}
 	}
 
-	var mempoolClient common.MempoolClient
-	if mempoolAddress != "" {
-		mempoolClient, err = common.NewMempoolClient()
-		if err != nil {
-			return nil, errors.WithMessage(err, "error getting mempool client")
-		}
+	mempoolClient, err := common.NewMempoolClient(mempoolAddress)
+	if err != nil {
+		return nil, errors.WithMessage(err, "error getting mempool client")
 	}
 
 	return &ChaincodeCmdFactory{
