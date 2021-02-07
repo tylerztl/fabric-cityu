@@ -336,7 +336,7 @@ func startThread(chain *chainImpl) {
 
 	logger.Infof("[channel: %s] Start phase completed successfully", chain.channel.topic())
 
-	go StartFetchTimer(chain.consenter.Mempool())
+	go StartFetchTimer(chain.consenter.Mempool(), chain.ConsenterSupport.Height())
 
 	chain.processMessagesToBlocks() // Keep up to date with the channel
 }

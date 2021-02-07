@@ -8,14 +8,14 @@ package kafka
 
 import (
 	"context"
-	"github.com/hyperledger/fabric/orderer/common/localconfig"
 	"time"
 
+	"github.com/hyperledger/fabric/orderer/common/localconfig"
 	pb "github.com/hyperledger/fabric/protos/common"
 	"google.golang.org/grpc"
 )
 
-func StartFetchTimer(mempool localconfig.MemPool) {
+func StartFetchTimer(mempool localconfig.MemPool, height uint64) {
 	conn, err := grpc.Dial(mempool.Address, grpc.WithInsecure())
 	if err != nil {
 		panic(err)
@@ -31,14 +31,14 @@ func StartFetchTimer(mempool localconfig.MemPool) {
 		case <-c:
 			go func() {
 				r, err := client.FetchTransactions(context.Background(), &pb.FetchTxsRequest{
-					Sender: mempool.OrdererIdentity,
-					TxNum:  10,
+					Requester:   mempool.OrdererIdentity,
+					BlockHeight: height,
 				})
 				if err != nil {
 					logger.Error("[mempool] failed to fetch transaction from mempool because = ", err)
 					return
 				}
-				logger.Infof("[mempool] succeed to fetch transaction, txNum=%d, isEmpty=%v", r.TxNum, r.IsEmpty)
+				logger.Infof("[mempool] succeed to fetch transaction, txNum=%d, feeReward=%d, isEmpty=%v", r.TxNum, r.FeeReward, r.IsEmpty)
 			}()
 		}
 	}
