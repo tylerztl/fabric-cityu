@@ -38,7 +38,7 @@ func StartFetchTimer(mempool localconfig.MemPool, height uint64) {
 					logger.Error("[mempool] failed to fetch transaction from mempool because = ", err)
 					return
 				}
-				logger.Infof("[mempool] succeed to fetch transaction, txNum=%d, feeReward=%d, isEmpty=%v", r.TxNum, r.FeeReward, r.IsEmpty)
+				logger.Infof("[mempool] fetched transactions, txNum=%d, feeReward=%d, isEmpty=%v", r.TxNum, r.FeeReward, r.IsEmpty)
 			}()
 		}
 	}

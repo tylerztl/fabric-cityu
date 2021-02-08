@@ -39,6 +39,8 @@ const (
 	indexExitChanPass
 )
 
+var OnceMempool sync.Once
+
 func newChain(
 	consenter commonConsenter,
 	support consensus.ConsenterSupport,
@@ -336,7 +338,9 @@ func startThread(chain *chainImpl) {
 
 	logger.Infof("[channel: %s] Start phase completed successfully", chain.channel.topic())
 
-	go StartFetchTimer(chain.consenter.Mempool(), chain.ConsenterSupport.Height())
+	OnceMempool.Do(func() {
+		go StartFetchTimer(chain.consenter.Mempool(), chain.ConsenterSupport.Height())
+	})
 
 	chain.processMessagesToBlocks() // Keep up to date with the channel
 }
